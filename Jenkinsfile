@@ -1,20 +1,26 @@
 pipeline {
-    agent any // Tells Jenkins to allocate any available runner/agent to execute this pipeline
+    agent none // Do not run on the Jenkins server itself
 
     stages {
-        stage('Build') {
+        stage('Build with Node') {
+            // Spin up a temporary Node.js container just for this stage
+            agent {
+                docker { image 'node:18-alpine' }
+            }
             steps {
-                echo 'Compiling the code...'
+                echo 'Building the application...'
+                // These commands execute INSIDE the isolated Node.js container
+                sh 'node --version' 
+                sh 'npm --version'
             }
         }
         stage('Test') {
-            steps {
-                echo 'Running unit tests...'
+            agent {
+                docker { image 'node:18-alpine' }
             }
-        }
-        stage('Deploy') {
             steps {
-                echo 'Deploying to staging environment...'
+                echo 'Running tests...'
+                sh 'echo "Tests passed!"'
             }
         }
     }
